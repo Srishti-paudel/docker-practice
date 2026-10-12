@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Expense Tracker</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 760px; margin: 32px auto; padding: 0 16px; background: #f5f6f8; color: #222; }
+    h1 { text-align: center; margin-bottom: 4px; }
+    .total { text-align: center; font-size: 28px; font-weight: 700; color: #2563eb; margin-bottom: 24px; }
+    .card { background: #fff; padding: 16px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.08); margin-bottom: 20px; }
+    form.add { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 8px; }
+    input, select { padding: 9px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+    button { padding: 9px 14px; border: 0; border-radius: 6px; background: #2563eb; color: #fff; cursor: pointer; }
+    button.del { background: #dc2626; padding: 6px 10px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; font-size: 14px; }
+    .num { text-align: right; }
+    .pill { background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 999px; font-size: 12px; }
+    .empty { text-align: center; color: #777; }
+    @media (max-width: 640px) { form.add { grid-template-columns: 1fr 1fr; } }
+  </style>
+</head>
+<body>
+  <h1>Expense Tracker</h1>
+  <div class="total">Total: {{ "%.2f"|format(total) }}</div>
+
+  <div class="card">
+    <form class="add" action="{{ url_for('add') }}" method="post">
+      <input type="text" name="title" placeholder="What did you buy?" required>
+      <input type="number" name="amount" step="0.01" min="0.01" placeholder="Amount" required>
+      <select name="category">
+        {% for c in categories %}<option>{{ c }}</option>{% endfor %}
+      </select>
+      <input type="date" name="spent_on" value="{{ today }}">
+      <button type="submit">Add</button>
+    </form>
+  </div>
+
+  {% if summary %}
+  <div class="card">
+    <strong>By category</strong>
+    <table>
+      {% for s in summary %}
+      <tr><td><span class="pill">{{ s.category }}</span></td><td class="num">{{ "%.2f"|format(s.subtotal) }}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+  {% endif %}
+
+  <div class="card">
+    {% if expenses %}
+    <table>
+      <tr><th>Date</th><th>Title</th><th>Category</th><th class="num">Amount</th><th></th></tr>
+      {% for e in expenses %}
+      <tr>
+        <td>{{ e.spent_on }}</td>
+        <td>{{ e.title }}</td>
+        <td><span class="pill">{{ e.category }}</span></td>
+        <td class="num">{{ "%.2f"|format(e.amount) }}</td>
+        <td><form action="{{ url_for('delete', expense_id=e.id) }}" method="post"><button class="del">Delete</button></form></td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <p class="empty">No expenses yet. Add your first one above.</p>
+    {% endif %}
+  </div>
+</body>
+</html>
